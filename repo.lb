@@ -1,0 +1,23 @@
+def init(repo):
+    repo.name = "nanopb"
+
+def prepare(repo, options):
+    repo.add_modules("protocol.lb")
+
+    return True
+
+def build(env):
+    env.outbasepath = "nanopb/src/nanopb"
+
+    env.copy("nanopb/pb_common.c", dest="pb_common.c")
+    env.copy("nanopb/pb_common.h", dest="pb_common.h")
+    env.copy("nanopb/pb_decode.c", dest="pb_decode.c")
+    env.copy("nanopb/pb_decode.h", dest="pb_decode.h")
+    env.copy("nanopb/pb_encode.c", dest="pb_encode.c")
+    env.copy("nanopb/pb_encode.h", dest="pb_encode.h")
+    env.copy("nanopb/pb.h", dest="pb.h")
+
+    env.collect(":build:path.include", "nanopb/src")
+
+
+    

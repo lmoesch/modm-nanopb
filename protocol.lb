@@ -1,0 +1,48 @@
+import os
+import subprocess
+import tempfile
+
+from pathlib import Path
+
+from lbuild.option import PathOption
+
+def init(module):
+    module.name = ":protocol"
+
+def prepare(module, options):
+    # Options
+    module.add_option(
+        PathOption(name="protofile.path", default="", empty_ok=True, absolute=True, description=""))
+
+    return True
+
+def build(env):
+    env.outbasepath = "nanopb/src/nanopb/protocol"
+    
+    tmpdir = tempfile.mkdtemp(dir=repopath("."))
+    print(tmpdir)
+
+    if env.has_option(":protocol:protofile.path"):
+        protoc = repopath("nanopb/generator/protoc")
+        protofile = localpath(env[":protocol:protofile.path"])
+
+        # cmd = fr'{protoc} --nanopb_out=. {protofile}'
+        cmd = ["python", protoc, f"--nanopb_out={tmpdir}", f"--proto_path={os.path.dirname(protofile)}",protofile]
+        subprocess.call(cmd)
+
+        for filename in os.listdir(tmpdir):
+            path = os.path.join(tmpdir, filename)
+
+            with open(path) as f:
+                content=f.read().replace('<pb.h>', '"nanopb/pb.h"')
+
+            with open(path, "w") as f:
+                f.write(content)
+
+            env.copy(path, dest=filename)
+            os.remove(path)
+
+        os.rmdir(tmpdir)
+
+
+
